@@ -80,3 +80,19 @@ exports.getMe = async (req, res, next) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({ success: true, data: user });
 };
+
+// @desc    Logout user / clear cookie
+// @route   GET /api/v1/auth/logout
+// @access  Private
+exports.logout = async (req, res, next) => {
+  const options = {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
+
+  res.status(200).cookie("token", null, options).json({ success: true });
+};
