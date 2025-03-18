@@ -8,6 +8,7 @@ dotenv.config({ path: "./config/config.env" });
 connectDB();
 
 const auth = require("./routes/auth");
+const bookings = require("./routes/bookings");
 const dentists = require("./routes/dentists");
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/v1/auth", auth);
+app.use("/api/v1/bookings", bookings);
 app.use("/api/v1/dentists", dentists);
 
 const PORT = process.env.PORT || 5000;

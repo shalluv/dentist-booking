@@ -5,11 +5,63 @@ const Dentist = require("../models/Dentist");
 //@access Public
 exports.getDentists = async (req, res, next) => {
   try {
-    const dentists = await Dentist.find();
+    let query;
+
+    const reqQuery = { ...req.query };
+
+    const removeFields = ["select", "sort", "page", "limit"];
+
+    removeFields.forEach((param) => delete reqQuery[param]);
+
+    let queryString = JSON.stringify(reqQuery);
+    queryString = queryString.replace(
+      /\b(gt|gte|lt|lte|in)\b/g,
+      (match) => `$${match}`
+    );
+    query = Dentist.find(JSON.parse(queryString)).populate("bookings");
+
+    if (req.query.select) {
+      const fields = req.query.select.split(",").join(" ");
+      query = query.select(fields);
+    }
+
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Dentist.countDocuments();
+
+    query = query.skip(startIndex).limit(limit);
+
+    const dentists = await query;
+
+    const pagination = {};
+
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit,
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit,
+      };
+    }
 
     res.status(200).json({
       success: true,
       count: dentists.length,
+      pagination,
       data: dentists,
     });
   } catch (error) {
@@ -25,7 +77,7 @@ exports.getDentist = async (req, res, next) => {
     const dentist = await Dentist.findById(req.params.id);
 
     if (!dentist) {
-      return res.status(400).json({ success: false });
+      return res.status(404).json({ success: false });
     }
 
     res.status(200).json({
@@ -59,7 +111,7 @@ exports.updateDentist = async (req, res, next) => {
     });
 
     if (!dentist) {
-      return res.status(400).json({ success: false });
+      return res.status(404).json({ success: false });
     }
 
     res.status(200).json({ success: true, data: dentist });
@@ -73,11 +125,14 @@ exports.updateDentist = async (req, res, next) => {
 //@access Private
 exports.deleteDentist = async (req, res, next) => {
   try {
-    const dentist = await Dentist.findByIdAndDelete(req.params.id);
+    const dentist = await Dentist.findById(req.params.id);
 
     if (!dentist) {
-      return res.status(400).json({ success: false });
+      return res.status(404).json({ success: false });
     }
+
+    await Booking.deleteMany({ dentist: req.params.id });
+    await Dentist.deleteOne({ _id: req.params.id });
 
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
