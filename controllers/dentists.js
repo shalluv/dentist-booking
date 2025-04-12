@@ -139,3 +139,26 @@ exports.deleteDentist = async (req, res, next) => {
     res.status(400).json({ success: false });
   }
 };
+
+// @desc    Update dentist availability
+// @route   PUT /api/v1/dentists/:id/availability
+// @access  Private
+exports.updateAvailability = async (req, res, next) => {
+  try {
+    const { autoSchedule, availability } = req.body;
+
+    const dentist = await Dentist.findByIdAndUpdate(
+      req.params.id,
+      { autoSchedule, availability },
+      { new: true, runValidators: true }
+    );
+
+    if (!dentist) {
+      return res.status(404).json({ success: false, error: "Dentist not found" });
+    }
+
+    res.status(200).json({ success: true, data: dentist });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
