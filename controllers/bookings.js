@@ -80,24 +80,26 @@ exports.addBooking = async (req, res, next) => {
       user: req.user.id,
     });
 
-    if (existingBooking.length >= 1 && req.user.role !== "admin") {
-      return res.status(400).json({
-        success: false,
-        message: "You can only book 1 bookings",
-      });
-    }
-
     if (dentist.autoSchedule) {
       const { bookingDate } = req.body;
-      const day = new Date(bookingDate).toLocaleString("en-US", { weekday: "long"}); //to day name
-      const availableSlot = dentist.availability.find(
-        (slot) => slot.day===day && bookingDate>=slot.startTime && bookingDate<=slot.endTime
-      );
-
-    if (!availableSlot) {
-      return res.status(400).json({
-        success: false,
-        error: "Selected booking date is not available for the dentist",
+      const bookingDateTime = new Date(bookingDate);
+      const day = bookingDateTime.toLocaleString("en-US", { weekday: "long" }); //to day name
+      const availableSlot = dentist.availability.find((slot) => {
+        const startTime = new Date(bookingDateTime);
+        startTime.setHours(slot.startTime.split(":")[0]);
+        startTime.setMinutes(slot.startTime.split(":")[1]);
+    
+        const endTime = new Date(bookingDateTime);
+        endTime.setHours(slot.endTime.split(":")[0]);
+        endTime.setMinutes(slot.endTime.split(":")[1]);
+    
+        return slot.day === day && bookingDateTime >= startTime && bookingDateTime <= endTime;
+      });
+    
+      if (!availableSlot) {
+        return res.status(400).json({
+          success: false,
+          error: "Selected booking date is not available for the dentist",
         });
       }
     }

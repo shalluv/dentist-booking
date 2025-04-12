@@ -28,6 +28,6 @@ router
   .delete(protect, authorize("admin"), deleteDentist);
 router
   .route("/:id/availability")
-  .put(protect, authorize("admin", "dentist"), updateAvailability);
+  .put(protect, authorize("admin"), updateAvailability);
 
 module.exports = router;
