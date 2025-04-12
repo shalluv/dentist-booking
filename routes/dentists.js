@@ -5,6 +5,7 @@ const {
   createDentist,
   updateDentist,
   deleteDentist,
+  updateAvailability,
 } = require("../controllers/dentists");
 const bookingRouter = require("./bookings");
 const reviewRouter = require("./reviews");
