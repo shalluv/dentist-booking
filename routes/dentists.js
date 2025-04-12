@@ -7,12 +7,14 @@ const {
   deleteDentist,
 } = require("../controllers/dentists");
 const bookingRouter = require("./bookings");
+const reviewRouter = require("./reviews");
 
 const router = express.Router();
 
 const { protect, authorize } = require("../middleware/auth");
 
 router.use("/:dentistId/bookings", bookingRouter);
+router.use("/:dentistId/reviews", reviewRouter);
 
 router
   .route("/")
