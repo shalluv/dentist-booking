@@ -87,6 +87,21 @@ exports.addBooking = async (req, res, next) => {
       });
     }
 
+    if (dentist.autoSchedule) {
+      const { bookingDate } = req.body;
+      const day = new Date(bookingDate).toLocaleString("en-US", { weekday: "long"}); //to day name
+      const availableSlot = dentist.availability.find(
+        (slot) => slot.day===day && bookingDate>=slot.startTime && bookingDate<=slot.endTime
+      );
+
+    if (!availableSlot) {
+      return res.status(400).json({
+        success: false,
+        error: "Selected booking date is not available for the dentist",
+        });
+      }
+    }
+
     const booking = await Booking.create(req.body);
 
     res.status(201).json({
