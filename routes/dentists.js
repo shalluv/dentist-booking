@@ -25,5 +25,8 @@ router
   .get(getDentist)
   .put(protect, authorize("admin"), updateDentist)
   .delete(protect, authorize("admin"), deleteDentist);
+router
+  .route("/:id/availability")
+  .put(protect, authorize("admin", "dentist"), updateAvailability);
 
 module.exports = router;
