@@ -15,6 +15,27 @@ const DentistSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please add an area of expertise"],
     },
+    autoSchedule: {
+      type: Boolean,
+      default: false,
+    },
+    availability: [
+      {
+        day: {
+          type: String,
+          enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          required: true,
+        },
+        startTime: {
+          type: String,
+          required: true,
+        },
+        endTime: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -35,5 +56,6 @@ DentistSchema.virtual("reviews", {
   foreignField: "dentist",
   justOne: false,
 });
+
 
 module.exports = mongoose.model("Dentist", DentistSchema);
