@@ -106,6 +106,13 @@ exports.addBooking = async (req, res, next) => {
           error: "Selected booking date is not available for the dentist",
         });
       }
+    } else {
+      if (existingBooking.length >= 1 && req.user.role !== "admin") {
+        return res.status(400).json({
+          success: false,
+          message: "You can only book 1 bookings",
+        });
+      }
     }
 
     const booking = await Booking.create(req.body);
