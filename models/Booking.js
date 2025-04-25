@@ -19,7 +19,6 @@ const BookingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  // Treatment information added for history
   treatment: {
     type: String,
     trim: true,

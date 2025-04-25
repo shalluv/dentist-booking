@@ -22,7 +22,15 @@ const DentistSchema = new mongoose.Schema(
       {
         day: {
           type: String,
-          enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          enum: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ],
           required: true,
         },
         startTime: {
@@ -55,6 +63,5 @@ DentistSchema.virtual("reviews", {
   foreignField: "dentist",
   justOne: false,
 });
-
 
 module.exports = mongoose.model("Dentist", DentistSchema);
