@@ -88,14 +88,18 @@ exports.addBooking = async (req, res, next) => {
         const startTime = new Date(bookingDateTime);
         startTime.setHours(slot.startTime.split(":")[0]);
         startTime.setMinutes(slot.startTime.split(":")[1]);
-    
+
         const endTime = new Date(bookingDateTime);
         endTime.setHours(slot.endTime.split(":")[0]);
         endTime.setMinutes(slot.endTime.split(":")[1]);
-    
-        return slot.day === day && bookingDateTime >= startTime && bookingDateTime <= endTime;
+
+        return (
+          slot.day === day &&
+          bookingDateTime >= startTime &&
+          bookingDateTime <= endTime
+        );
       });
-    
+
       if (!availableSlot) {
         return res.status(400).json({
           success: false,
@@ -167,5 +171,51 @@ exports.deleteBooking = async (req, res, next) => {
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(500).json({ success: false });
+  }
+};
+
+// @desc Get appointment history for a user
+// @route GET /api/v1/bookings/user/:userId/history
+// @access Private (admin)
+exports.getUserHistory = async (req, res, next) => {
+  try {
+    const bookings = await Booking.find({ user: req.params.userId })
+      .populate({
+        path: "dentist",
+        select: "name year area",
+      })
+      .sort({ bookingDate: -1 }); // sort descending by date
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server Error" });
+  }
+};
+
+// @desc Update treatment history for a booking
+// @route PUT /api/v1/bookings/:id/history
+// @access Private (admin)
+exports.updateHistory = async (req, res, next) => {
+  try {
+    const { treatment, notes } = req.body;
+    let booking = await Booking.findById(req.params.id);
+    console.log("hi");
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Booking not found" });
+    }
+    booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { treatment, notes },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({ success: true, data: booking });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server Error" });
   }
 };

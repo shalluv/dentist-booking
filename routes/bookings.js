@@ -5,6 +5,8 @@ const {
   addBooking,
   updateBooking,
   deleteBooking,
+  getUserHistory,
+  updateHistory,
 } = require("../controllers/bookings");
 
 const router = express.Router({ mergeParams: true });
@@ -20,5 +22,10 @@ router
   .get(protect, getBooking)
   .put(protect, authorize("admin", "user"), updateBooking)
   .delete(protect, authorize("admin", "user"), deleteBooking);
+
+router
+  .route("/user/:userId/history")
+  .get(protect, authorize("admin"), getUserHistory);
+router.route("/:id/history").put(protect, authorize("admin"), updateHistory);
 
 module.exports = router;
